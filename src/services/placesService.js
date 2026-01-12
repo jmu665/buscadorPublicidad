@@ -58,6 +58,7 @@ export const searchBusinesses = async (businessName, city, pageToken = null) => 
             photoUrl: place.photos && place.photos.length > 0
                 ? getPhotoUrl(place.photos[0].name)
                 : null,
+            city: city, // Guardamos la ciudad de la búsqueda
         }));
 
         return {

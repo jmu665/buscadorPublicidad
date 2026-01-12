@@ -1,6 +1,17 @@
 import BusinessCard from './BusinessCard';
 
-const ResultsList = ({ businesses, isLoading, error, searchPerformed, isReviewed, onToggleReviewed, hasMore, isLoadingMore, onLoadMore }) => {
+const ResultsList = ({
+    businesses,
+    isLoading,
+    error,
+    searchPerformed,
+    isReviewed,
+    onToggleReviewed,
+    hasMore,
+    isLoadingMore,
+    onLoadMore,
+    customCategories
+}) => {
     // Estado de carga
     if (isLoading) {
         return (
@@ -120,6 +131,7 @@ const ResultsList = ({ businesses, isLoading, error, searchPerformed, isReviewed
                             business={business}
                             isReviewed={isReviewed(business.id)}
                             onToggleReviewed={onToggleReviewed}
+                            customCategories={customCategories}
                         />
                     </div>
                 ))}
