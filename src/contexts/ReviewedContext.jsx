@@ -125,17 +125,22 @@ export const ReviewedProvider = ({ children }) => {
 
         try {
             if (isAlreadyReviewed) {
+                console.log("Removiendo lead de la nube:", businessId);
                 await deleteDoc(businessDoc);
             } else {
+                console.log("Guardando lead en la nube:", businessId);
                 await setDoc(businessDoc, {
                     ...business,
+                    id: businessId,
                     category,
                     status: 'waiting',
                     createdAt: new Date().toISOString()
                 });
             }
+            setFirebaseError(null);
         } catch (error) {
             console.error("Error toggling lead:", error);
+            setFirebaseError(`Error al guardar/borrar: ${error.message}`);
         }
     };
 
@@ -144,8 +149,10 @@ export const ReviewedProvider = ({ children }) => {
             const docId = String(businessId);
             const businessDoc = doc(db, 'reviewed_leads', docId);
             await updateDoc(businessDoc, { category: newCategory });
+            setFirebaseError(null);
         } catch (error) {
             console.error("Error updating category:", error);
+            setFirebaseError(`Error al actualizar categoría: ${error.message}`);
         }
     };
 
@@ -154,8 +161,10 @@ export const ReviewedProvider = ({ children }) => {
             const docId = String(businessId);
             const businessDoc = doc(db, 'reviewed_leads', docId);
             await updateDoc(businessDoc, { status: newStatus });
+            setFirebaseError(null);
         } catch (error) {
             console.error("Error updating status:", error);
+            setFirebaseError(`Error al actualizar estatus: ${error.message}`);
         }
     };
 
@@ -204,7 +213,8 @@ export const ReviewedProvider = ({ children }) => {
             // Move businesses to General
             reviewedBusinesses.forEach(b => {
                 if (b.category === name) {
-                    const leadDoc = doc(db, 'reviewed_leads', b.id);
+                    const leadId = String(b.id);
+                    const leadDoc = doc(db, 'reviewed_leads', leadId);
                     batch.update(leadDoc, { category: 'General' });
                 }
             });
