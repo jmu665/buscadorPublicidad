@@ -17,13 +17,13 @@ export const generateWhatsAppLink = (phoneNumber, businessName = '') => {
     }
 
     // Mensaje predeterminado - Promoción AgendaApp 360
-    const defaultMessage = `¡Hola! Soy Martín Urías. Te contacto porque ando lanzando AgendaApp 360. La diseñé pensando en lo pesado que es llevar el control de las citas a mano. La idea es automatizar todo para que el negocio crezca solo.
+    const defaultMessage = `¡Hola! Soy Martín Urías. Vi tu negocio en Google Maps y te contacto porque hice una app (AgendaApp 360) para que dueños de negocios automaticen sus citas y dejen de perder tiempo con el celular.
 
-Como apenas vamos arrancando, te quiero regalar 30 días de acceso total para que la cales. No te cuesta nada y te quitas de broncas de organización.
+Te regalo 30 días para que la pruebes sin compromiso. Es súper fácil de usar.
 
-Entra aquí para activarla: agendaapp360.com/marketing
+Aquí la ves: agendaapp360.com/marketing
 
-¡Ojalá te animes a probarla! Un saludo.`;
+¡Cualquier cosa quedo a la orden, gracias!`;
 
     const encodedMessage = encodeURIComponent(defaultMessage);
 
