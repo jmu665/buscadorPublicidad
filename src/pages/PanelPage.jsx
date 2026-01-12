@@ -13,7 +13,8 @@ const PanelPage = () => {
         addCustomCategory,
         removeCustomCategory,
         clearReviewed,
-        isLoading
+        isLoading,
+        firebaseError
     } = useReviewed();
 
     const [selectedCategory, setSelectedCategory] = useState('Todas');
@@ -120,6 +121,18 @@ const PanelPage = () => {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 py-8">
+                {firebaseError && (
+                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-pulse">
+                        <span className="text-2xl">⚠️</span>
+                        <div>
+                            <h3 className="text-red-400 font-bold uppercase tracking-wider text-xs">Error de Base de Datos</h3>
+                            <p className="text-red-300/80 text-sm">
+                                {firebaseError}. Asegúrate de haber activado las <b>Rules (Reglas)</b> en tu consola de Firebase Firestore para permitir lectura/escritura.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Search and Filters Bar */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
                     {/* Search & City Filter */}

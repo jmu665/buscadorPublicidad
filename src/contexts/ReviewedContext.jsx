@@ -17,58 +17,81 @@ export const ReviewedProvider = ({ children }) => {
     const [reviewedBusinesses, setReviewedBusinesses] = useState([]);
     const [customCategories, setCustomCategories] = useState(['General', 'VIP', 'Seguimiento']);
     const [isLoading, setIsLoading] = useState(true);
+    const [firebaseError, setFirebaseError] = useState(null);
 
     // 1. Sync Categorías
     useEffect(() => {
         const settingsDoc = doc(db, 'settings', 'app_config');
-        const unsub = onSnapshot(settingsDoc, (docSnap) => {
-            if (docSnap.exists()) {
-                setCustomCategories(docSnap.data().categories || ['General', 'VIP', 'Seguimiento']);
-            } else {
-                // Initialize default categories if they don't exist
-                setDoc(settingsDoc, { categories: ['General', 'VIP', 'Seguimiento'] });
+        const unsub = onSnapshot(settingsDoc,
+            (docSnap) => {
+                setFirebaseError(null);
+                if (docSnap.exists()) {
+                    setCustomCategories(docSnap.data().categories || ['General', 'VIP', 'Seguimiento']);
+                } else {
+                    setDoc(settingsDoc, { categories: ['General', 'VIP', 'Seguimiento'] }).catch(err => {
+                        console.error("Error inicializando categorías:", err);
+                        if (err.code === 'permission-denied') setFirebaseError('Permisos de Firebase insuficientes');
+                    });
+                }
+            },
+            (error) => {
+                console.error("Error en listener de categorías:", error);
+                if (error.code === 'permission-denied') setFirebaseError('Permisos de Firebase insuficientes');
             }
-        });
+        );
         return () => unsub();
     }, []);
 
     // 2. Sync Leads
     useEffect(() => {
         const leadsCol = collection(db, 'reviewed_leads');
-        const unsub = onSnapshot(leadsCol, (querySnapshot) => {
-            const leads = [];
-            querySnapshot.forEach((doc) => {
-                leads.push({ ...doc.data(), id: doc.id });
-            });
-            setReviewedBusinesses(leads);
-            setIsLoading(false);
-        });
+        const unsub = onSnapshot(leadsCol,
+            (querySnapshot) => {
+                setFirebaseError(null);
+                const leads = [];
+                querySnapshot.forEach((doc) => {
+                    leads.push({ ...doc.data(), id: doc.id });
+                });
+                setReviewedBusinesses(leads);
+                setIsLoading(false);
+            },
+            (error) => {
+                console.error("Error en listener de leads:", error);
+                if (error.code === 'permission-denied') setFirebaseError('Permisos de Firebase insuficientes');
+                setIsLoading(false);
+            }
+        );
         return () => unsub();
     }, []);
 
-    // 3. Migración Automática de versión anterior (localStorage -> Firestore)
+    // 3. Migración Automática
     useEffect(() => {
         const migrateLocalToCloud = async () => {
-            if (isLoading) return;
+            if (isLoading || firebaseError) return;
 
             const localLeads = localStorage.getItem('reviewed_businesses');
             const localCats = localStorage.getItem('custom_categories');
 
             if (localLeads || localCats) {
-                console.log("Detectados datos de la versión anterior. Migrando a la nube...");
                 try {
                     const batch = writeBatch(db);
+                    let hasChanges = false;
 
                     if (localLeads) {
                         const leads = JSON.parse(localLeads);
                         leads.forEach(lead => {
-                            const leadDoc = doc(db, 'reviewed_leads', lead.id);
-                            batch.set(leadDoc, {
-                                ...lead,
-                                status: lead.status || 'waiting',
-                                city: lead.city || 'Desconocida',
-                                createdAt: lead.createdAt || new Date().toISOString()
-                            }, { merge: true });
+                            if (lead && lead.id) {
+                                const leadId = String(lead.id);
+                                const leadDoc = doc(db, 'reviewed_leads', leadId);
+                                batch.set(leadDoc, {
+                                    ...lead,
+                                    id: leadId,
+                                    status: lead.status || 'waiting',
+                                    city: lead.city || 'Desconocida',
+                                    createdAt: lead.createdAt || new Date().toISOString()
+                                }, { merge: true });
+                                hasChanges = true;
+                            }
                         });
                     }
 
@@ -76,14 +99,14 @@ export const ReviewedProvider = ({ children }) => {
                         const cats = JSON.parse(localCats);
                         const settingsDoc = doc(db, 'settings', 'app_config');
                         batch.set(settingsDoc, { categories: cats }, { merge: true });
+                        hasChanges = true;
                     }
 
-                    await batch.commit();
-
-                    // Limpiamos solo después de confirmar éxito en la nube
-                    localStorage.removeItem('reviewed_businesses');
-                    localStorage.removeItem('custom_categories');
-                    console.log("¡Migración exitosa! Datos antiguos sincronizados con Firebase.");
+                    if (hasChanges) {
+                        await batch.commit();
+                        localStorage.removeItem('reviewed_businesses');
+                        localStorage.removeItem('custom_categories');
+                    }
                 } catch (error) {
                     console.error("Error durante la migración:", error);
                 }
@@ -91,13 +114,14 @@ export const ReviewedProvider = ({ children }) => {
         };
 
         migrateLocalToCloud();
-    }, [isLoading]);
+    }, [isLoading, firebaseError]);
 
     const toggleReviewed = async (business, category = 'General') => {
         if (!business || !business.id) return;
 
-        const businessDoc = doc(db, 'reviewed_leads', business.id);
-        const isAlreadyReviewed = reviewedBusinesses.some(b => b.id === business.id);
+        const businessId = String(business.id);
+        const businessDoc = doc(db, 'reviewed_leads', businessId);
+        const isAlreadyReviewed = reviewedBusinesses.some(b => b.id === businessId);
 
         try {
             if (isAlreadyReviewed) {
@@ -117,7 +141,8 @@ export const ReviewedProvider = ({ children }) => {
 
     const updateCategory = async (businessId, newCategory) => {
         try {
-            const businessDoc = doc(db, 'reviewed_leads', businessId);
+            const docId = String(businessId);
+            const businessDoc = doc(db, 'reviewed_leads', docId);
             await updateDoc(businessDoc, { category: newCategory });
         } catch (error) {
             console.error("Error updating category:", error);
@@ -126,7 +151,8 @@ export const ReviewedProvider = ({ children }) => {
 
     const updateStatus = async (businessId, newStatus) => {
         try {
-            const businessDoc = doc(db, 'reviewed_leads', businessId);
+            const docId = String(businessId);
+            const businessDoc = doc(db, 'reviewed_leads', docId);
             await updateDoc(businessDoc, { status: newStatus });
         } catch (error) {
             console.error("Error updating status:", error);
@@ -201,6 +227,7 @@ export const ReviewedProvider = ({ children }) => {
             addCustomCategory,
             removeCustomCategory,
             isLoading,
+            firebaseError,
             getReviewedCount: () => reviewedBusinesses.length
         }}>
             {children}
