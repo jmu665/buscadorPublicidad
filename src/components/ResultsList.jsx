@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import BusinessCard from './BusinessCard';
 
 const ResultsList = ({
@@ -12,8 +13,16 @@ const ResultsList = ({
     onLoadMore,
     customCategories
 }) => {
+    const [hideReviewed, setHideReviewed] = useState(false);
+
+    const filteredBusinesses = useMemo(() => {
+        if (!hideReviewed) return businesses;
+        return businesses.filter(b => !isReviewed(b.id));
+    }, [businesses, hideReviewed, isReviewed]);
+
     // Estado de carga
     if (isLoading) {
+        // ... rest of loading state ...
         return (
             <div className="w-full max-w-6xl mx-auto px-4 py-12">
                 <div className="flex flex-col items-center justify-center space-y-6">
@@ -33,6 +42,7 @@ const ResultsList = ({
 
     // Estado de error
     if (error) {
+        // ... rest of error state ...
         return (
             <div className="w-full max-w-6xl mx-auto px-4 py-12">
                 <div className="card p-8 bg-red-500/5 border-red-500/20">
@@ -68,6 +78,7 @@ const ResultsList = ({
 
     // Sin resultados
     if (searchPerformed && businesses.length === 0) {
+        // ... rest of empty state ...
         return (
             <div className="w-full max-w-6xl mx-auto px-4 py-12">
                 <div className="card p-16 text-center border-dashed border-slate-800">
@@ -85,6 +96,7 @@ const ResultsList = ({
 
     // Estado inicial (sin búsqueda realizada)
     if (!searchPerformed) {
+        // ... rest of initial state ...
         return (
             <div className="w-full max-w-6xl mx-auto px-4 py-20">
                 <div className="text-center">
@@ -104,7 +116,7 @@ const ResultsList = ({
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-8">
             {/* Encabezado de resultados */}
-            <div className="mb-10 flex items-center justify-between border-b border-slate-800/60 pb-6 animate-fade-in">
+            <div className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 border-b border-slate-800/60 pb-6 animate-fade-in">
                 <div>
                     <h2 className="text-2xl font-bold text-white mb-1">
                         Resultados de búsqueda
@@ -113,19 +125,37 @@ const ResultsList = ({
                         Explora los leads encontrados para tu negocio
                     </p>
                 </div>
-                <div className="bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700/50">
-                    <p className="text-slate-300 text-sm font-medium">
-                        <span className="text-primary-400 font-bold mr-1">{businesses.length}</span> negocios
-                    </p>
+
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Toggle Ocultar Revisados */}
+                    <button
+                        onClick={() => setHideReviewed(!hideReviewed)}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all duration-300 ${hideReviewed
+                                ? 'bg-primary-500/10 border-primary-500/50 text-primary-400'
+                                : 'bg-slate-800/30 border-slate-700/50 text-slate-400 hover:border-slate-600'
+                            }`}
+                    >
+                        <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${hideReviewed ? 'bg-primary-500' : 'bg-slate-700'}`}>
+                            <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-300 ${hideReviewed ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-wider">Ocultar revisados</span>
+                    </button>
+
+                    <div className="bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700/50">
+                        <p className="text-slate-300 text-sm font-medium">
+                            <span className="text-primary-400 font-bold mr-1">{filteredBusinesses.length}</span> negocios
+                        </p>
+                    </div>
                 </div>
             </div>
 
             {/* Grid de tarjetas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {businesses.map((business, index) => (
+                {filteredBusinesses.map((business, index) => (
                     <div
-                        key={business.id || index}
-                        style={{ animationDelay: `${index * 0.1}s` }}
+                        key={business.id}
+                        className="animate-fade-in-up"
+                        style={{ animationDelay: `${index * 0.05}s` }}
                     >
                         <BusinessCard
                             business={business}
@@ -136,6 +166,19 @@ const ResultsList = ({
                     </div>
                 ))}
             </div>
+
+            {filteredBusinesses.length === 0 && hideReviewed && businesses.length > 0 && (
+                <div className="py-20 text-center animate-fade-in">
+                    <div className="text-6xl mb-4">✨</div>
+                    <p className="text-slate-400 font-medium">Todos los resultados de esta página ya han sido revisados.</p>
+                    <button
+                        onClick={() => setHideReviewed(false)}
+                        className="mt-4 text-primary-400 hover:text-primary-300 text-sm font-bold uppercase tracking-widest"
+                    >
+                        Mostrar todos
+                    </button>
+                </div>
+            )}
 
             {/* Botón de Cargar Más */}
             {hasMore && !isLoadingMore && (
