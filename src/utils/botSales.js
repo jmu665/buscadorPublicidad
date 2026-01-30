@@ -4,8 +4,8 @@
  * @param {string} message - Mensaje personalizado opcional
  */
 export const sendToSalesBot = async (phoneNumber, message) => {
-    // Tu URL pública segura
-    const BOT_URL = "https://macbook-air-de-jesus-2.tail55c3e4.ts.net/hooks/agent";
+    // Usamos el path relativo para que funcione con el proxy (Dev y Prod)
+    const BOT_URL = "/api/bot/hooks/agent";
 
     // Tu contraseña de bot
     const SECRET = "my-secret-webhook-key";
