@@ -38,9 +38,9 @@ const SearchBar = ({ onSearch, isLoading }) => {
         <div className="w-full max-w-4xl mx-auto px-4 py-8 animate-slide-up">
             <div className="card p-8">
                 <div className="mb-8 text-center">
-                    <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
+                    <h2 className="text-4xl font-bold text-white mb-3 tracking-tight">
                         🔍 Buscador de Negocios
-                    </h1>
+                    </h2>
                     <p className="text-slate-400 text-lg">
                         Encuentra negocios locales y contáctalos por WhatsApp
                     </p>
@@ -58,6 +58,8 @@ const SearchBar = ({ onSearch, isLoading }) => {
                             </label>
                             <input
                                 id="businessName"
+                                name="businessName"
+                                autoComplete="organization"
                                 type="text"
                                 value={businessName}
                                 onChange={(e) => {
@@ -87,6 +89,8 @@ const SearchBar = ({ onSearch, isLoading }) => {
                             </label>
                             <input
                                 id="city"
+                                name="city"
+                                autoComplete="address-level2"
                                 type="text"
                                 value={city}
                                 onChange={(e) => {

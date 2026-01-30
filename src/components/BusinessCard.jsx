@@ -1,5 +1,44 @@
 import { useState } from 'react';
 import { openWhatsApp } from '../utils/whatsapp';
+import { useBulkSelection } from '../contexts/BulkSelectionContext';
+
+const renderStars = (rating) => {
+    if (!rating) return null;
+
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+        if (i < fullStars) {
+            stars.push(
+                <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                </svg>
+            );
+        } else if (i === fullStars && hasHalfStar) {
+            stars.push(
+                <svg key={i} className="w-5 h-5 text-yellow-400" viewBox="0 0 20 20">
+                    <defs>
+                        <linearGradient id="half">
+                            <stop offset="50%" stopColor="currentColor" />
+                            <stop offset="50%" stopColor="#D1D5DB" stopOpacity="1" />
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#half)" d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                </svg>
+            );
+        } else {
+            stars.push(
+                <svg key={i} className="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                </svg>
+            );
+        }
+    }
+
+    return stars;
+};
 
 const BusinessCard = ({ business, isReviewed = false, onToggleReviewed, customCategories = ['General'] }) => {
     const [selectedCategory, setSelectedCategory] = useState(business.category || 'General');
@@ -14,52 +53,19 @@ const BusinessCard = ({ business, isReviewed = false, onToggleReviewed, customCa
         photoUrl,
     } = business;
 
+    const { isSelected, toggleSelection } = useBulkSelection();
+    const selected = isSelected(id);
+
     const handleWhatsAppClick = () => {
         if (phone) {
             openWhatsApp(phone, name);
         }
     };
 
-    const renderStars = (rating) => {
-        if (!rating) return null;
 
-        const stars = [];
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-
-        for (let i = 0; i < 5; i++) {
-            if (i < fullStars) {
-                stars.push(
-                    <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                );
-            } else if (i === fullStars && hasHalfStar) {
-                stars.push(
-                    <svg key={i} className="w-5 h-5 text-yellow-400" viewBox="0 0 20 20">
-                        <defs>
-                            <linearGradient id="half">
-                                <stop offset="50%" stopColor="currentColor" />
-                                <stop offset="50%" stopColor="#D1D5DB" stopOpacity="1" />
-                            </linearGradient>
-                        </defs>
-                        <path fill="url(#half)" d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                );
-            } else {
-                stars.push(
-                    <svg key={i} className="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 20 20">
-                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                );
-            }
-        }
-
-        return stars;
-    };
 
     return (
-        <div className={`card group hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 animate-scale-in ${isReviewed ? 'ring-2 ring-green-500/50 bg-[#1e293b]' : ''}`}>
+        <div className={`card group hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 animate-scale-in motion-reduce:transition-none motion-reduce:animate-none ${isReviewed ? 'ring-2 ring-green-500/50 bg-[#1e293b]' : ''}`}>
             {/* Imagen */}
             <div className="relative h-48 bg-slate-800 overflow-hidden">
                 {photoUrl ? (
@@ -100,6 +106,7 @@ const BusinessCard = ({ business, isReviewed = false, onToggleReviewed, customCa
                                 : 'bg-black/40 hover:bg-black/60 text-white border border-white/20'
                             } hover:scale-110 active:scale-95`}
                         title={isReviewed ? 'Marcar como no revisado' : 'Marcar como revisado'}
+                        aria-label={isReviewed ? 'Marcar como no revisado' : 'Marcar como revisado'}
                     >
                         {isReviewed ? (
                             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -125,6 +132,30 @@ const BusinessCard = ({ business, isReviewed = false, onToggleReviewed, customCa
                     )}
                 </div>
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#161e2d] to-transparent"></div>
+
+                {/* Bulk Selection Checkbox - Botón esquina inferior derecha de la imagen */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelection(business);
+                    }}
+                    className={`absolute bottom-3 right-3 z-20 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shadow-lg ${selected
+                        ? 'bg-blue-500 text-white scale-110 shadow-blue-500/40'
+                        : 'bg-black/40 text-white/50 hover:bg-black/60 hover:text-white border border-white/20'
+                        }`}
+                    title={selected ? "Quitar de la lista" : "Agregar a la lista"}
+                    aria-label={selected ? "Quitar de la lista de envío masivo" : "Agregar a la lista de envío masivo"}
+                >
+                    {selected ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                    ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                    )}
+                </button>
             </div>
 
             {/* Contenido */}

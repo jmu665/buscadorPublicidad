@@ -73,7 +73,7 @@ const SearchCounter = () => {
                     </div>
                     <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden shadow-inner">
                         <div
-                            className={`h-full ${getStatusColor()} transition-all duration-700 ease-out shadow-[0_0_12px_rgba(34,197,94,0.3)]`}
+                            className={`h-full ${getStatusColor()} transition-all duration-700 ease-out shadow-[0_0_12px_rgba(34,197,94,0.3)] motion-reduce:transition-none`}
                             style={{ width: `${Math.min(stats.percentageOfFreeTier, 100)}%` }}
                         />
                     </div>
@@ -98,7 +98,7 @@ const SearchCounter = () => {
                         </div>
                         <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden shadow-inner">
                             <div
-                                className={`h-full ${stats.isOverCredit ? 'bg-red-500' : 'bg-blue-500'} transition-all duration-700 ease-out shadow-[0_0_12px_rgba(59,130,246,0.3)]`}
+                                className={`h-full ${stats.isOverCredit ? 'bg-red-500' : 'bg-blue-500'} transition-all duration-700 ease-out shadow-[0_0_12px_rgba(59,130,246,0.3)] motion-reduce:transition-none`}
                                 style={{ width: `${Math.min(stats.percentageOfCredit, 100)}%` }}
                             />
                         </div>

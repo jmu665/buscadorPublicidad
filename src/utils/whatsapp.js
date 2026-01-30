@@ -1,3 +1,13 @@
+// Mensaje predeterminado - Promoción AgendaApp 360
+export const DEFAULT_MESSAGE_TEMPLATE = `¡Qué tal! ¿Cómo están? Soy Martín Urías. 
+Los busco porque ando lanzando una aplicación para automatizar citas y quitarles de encima el peso de la agenda a mano. 
+
+Ahorita abrí 10 lugares para calarla gratis por un mes con acceso completo.
+
+Pensé en escribirles por aquí por si quieren aprovechar y organizar su negocio de una vez por todas sin que les cueste nada.
+
+"¿Les serviría algo así para su negocio o ya tienen algún sistema que les haga la chamba?"`;
+
 /**
  * Genera un enlace de WhatsApp para contactar a un negocio
  * @param {string} phoneNumber - Número de teléfono del negocio
@@ -16,15 +26,7 @@ export const generateWhatsAppLink = (phoneNumber, businessName = '') => {
         return null; // Número inválido
     }
 
-    // Mensaje predeterminado - Promoción AgendaApp 360
-    const defaultMessage = `"¡Qué tal! ¿Cómo están? Soy Martín Urías. 
-Los busco porque ando lanzando una aplicación para automatizar citas y quitarles de encima el peso de la agenda a mano. 
-
-Ahorita abrí 10 lugares para calarla gratis por un mes con acceso completo.
-
-Pensé en escribirles por aquí por si quieren aprovechar y organizar su negocio de una vez por todas sin que les cueste nada.
-
-"¿Les serviría algo así para su negocio o ya tienen algún sistema que les haga la chamba?"`;
+    const defaultMessage = DEFAULT_MESSAGE_TEMPLATE;
 
     const encodedMessage = encodeURIComponent(defaultMessage);
 
