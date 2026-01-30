@@ -1,10 +1,4 @@
 [[redirects]]
-  from = "/api/bot/*"
-  to = "https://macbook-air-de-jesus-2.tail55c3e4.ts.net/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
