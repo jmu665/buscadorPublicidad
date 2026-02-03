@@ -2,6 +2,9 @@ import { useState, useMemo } from 'react';
 import { useReviewed } from '../contexts/ReviewedContext';
 import { openWhatsApp } from '../utils/whatsapp';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 const PanelPage = () => {
     const {
@@ -21,6 +24,17 @@ const PanelPage = () => {
     const [selectedCity, setSelectedCity] = useState('Todas');
     const [genreSearch, setGenreSearch] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [apiCount, setApiCount] = useState(null);
+
+    // Listen to API stats
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'system_stats', 'api_usage'), (doc) => {
+            if (doc.exists()) {
+                setApiCount(doc.data().google_places_requests || 0);
+            }
+        });
+        return () => unsub();
+    }, []);
 
     const statusOptions = [
         { id: 'waiting', label: 'Esperando respuesta', color: 'bg-amber-500', text: 'text-amber-500' },
@@ -107,6 +121,23 @@ const PanelPage = () => {
                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Total Leads</span>
                             <span className="text-lg font-black text-white">{reviewedBusinesses.length}</span>
                         </div>
+                        {apiCount !== null && (
+                            <div className="hidden sm:flex flex-col items-end border-l border-slate-700 pl-4">
+                                <span className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">API Limit Utilizado</span>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-lg font-black ${apiCount >= 1000 ? 'text-red-500' : apiCount >= 800 ? 'text-amber-500' : 'text-white'}`}>
+                                        {apiCount} / 1000
+                                    </span>
+                                </div>
+                                {/* Mini Progress Bar */}
+                                <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+                                    <div
+                                        className={`h-full transition-all duration-500 ${apiCount >= 1000 ? 'bg-red-500' : apiCount >= 800 ? 'bg-amber-500' : 'bg-blue-500'}`}
+                                        style={{ width: `${Math.min((apiCount / 1000) * 100, 100)}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        )}
                         <button
                             onClick={clearReviewed}
                             className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white p-2.5 rounded-xl transition-all duration-300 border border-red-500/20 group"

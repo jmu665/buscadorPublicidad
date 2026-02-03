@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useBulkSelection } from '../contexts/BulkSelectionContext';
-import { sendToSalesBot } from '../utils/botSales';
+
 
 const BulkActionPanel = () => {
     const { selectedBusinesses, clearSelection } = useBulkSelection();
@@ -19,7 +19,7 @@ Pensé en escribirles por aquí por si quieren aprovechar y organizar su negocio
     const [isAutoSending, setIsAutoSending] = useState(false);
     const [generatedLinks, setGeneratedLinks] = useState('');
     const [showLinks, setShowLinks] = useState(false);
-    const [useBot, setUseBot] = useState(false);
+
 
     // Efecto para el envío automático
     useEffect(() => {
@@ -94,17 +94,9 @@ Pensé en escribirles por aquí por si quieren aprovechar y organizar su negocio
 
             const cleanPhone = business.phone.replace(/\D/g, '');
 
-            if (useBot) {
-                // Envío vía Bot
-                const success = await sendToSalesBot(cleanPhone, finalMessage);
-                if (success) {
-                    // Opcional: Feedback visual extra si quisieras
-                }
-            } else {
-                // Envío Manual (WhatsApp Web)
-                const encodedMessage = encodeURIComponent(finalMessage);
-                window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
-            }
+            // Envío Manual (WhatsApp Web)
+            const encodedMessage = encodeURIComponent(finalMessage);
+            window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
         }
     };
 
@@ -150,27 +142,7 @@ Pensé en escribirles por aquí por si quieren aprovechar y organizar su negocio
                         </div>
 
                         <div className="p-6 space-y-6">
-                            {/* Toggle Modo de Envío */}
-                            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-bold text-white text-sm">Método de Envío</h3>
-                                    <p className="text-xs text-slate-400">Elige cómo quieres contactar a los clientes</p>
-                                </div>
-                                <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700">
-                                    <button
-                                        onClick={() => setUseBot(false)}
-                                        className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${!useBot ? 'bg-green-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                    >
-                                        WhatsApp
-                                    </button>
-                                    <button
-                                        onClick={() => setUseBot(true)}
-                                        className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${useBot ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                    >
-                                        Bot AI 🤖
-                                    </button>
-                                </div>
-                            </div>
+
 
                             {/* Editor de Mensaje */}
                             <div>
